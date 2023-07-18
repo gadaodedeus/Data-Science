@@ -1,7 +1,6 @@
 import pandas as pd
 import count as ct 
+from init import init_df
 
-bd=pd.read_excel('base.xlsx')
-bd=bd.values.tolist()
-bd=pd.DataFrame(bd, columns=['nome','ifood','rating','cnpj'] )
-print(ct.count_reg(bd.nome))
+bd=init_df('base.xlsx')
+print(ct.count_missing(bd.link_ifood))
