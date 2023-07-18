@@ -3,4 +3,4 @@ import count as ct
 from init import init_df
 
 bd=init_df('base.xlsx')
-print(ct.count_missing(bd.ifood))
+print(bd.ifood.value_counts())
