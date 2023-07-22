@@ -30,6 +30,21 @@ def report(metric, aux_dict, total):
         print('\tTOTAL DATA: '+str(total))
         print('\tMISSING DATA: '+str(mis))
         print('\tPERCENTAGE: '+str(percentage*100)+'%')
+
+    if metric == 'validity':
+        invalid=dict_sum(aux_dict)
+        percentage=float(invalid/total)
+        print('--------------VALIDITY')
+        print('\tTOTAL DATA: '+str(total))
+        print('\tINVALID DATA: '+str(invalid))
+        print('\tPERCENTAGE: '+str(percentage*100)+'%')
+
+def column_types(col_list):
+    aux=col_list.value_counts()
+    aux_dict={}
+    for reg in aux.keys():
+        aux_dict[reg]=aux[reg]
+    print(aux_dict)
     
 def duplicated(col_list):
     aux=col_list.value_counts()
@@ -59,3 +74,62 @@ def missing(col_list): #quantidade de registros nao vazios
 	        mis+=1
     aux_dict[0]=mis
     report('missing',aux_dict,len(col_list))
+
+def validity(col_list, data_type):
+    aux=col_list.value_counts()
+    aux_dict={}
+    aux_dict[0]=0
+    if data_type == 'link':
+        #re
+        aux=0
+
+    elif data_type == 'endereço':
+        #re
+        aux=0
+
+    elif data_type == 'nome':
+        #re
+        aux=0
+    
+    elif data_type == 'rating':
+        for i in aux.keys():
+            try:
+                if float(i) < 0.0 or float(i) > 5.0:
+                    aux_dict[0]+=aux[i]
+            except: #Nan cases
+                if  not i == '*':
+                    aux_dict[0]+=aux[i]
+
+    elif data_type == 'fone':
+        #re
+        aux=0
+
+    elif data_type == 'ifood':
+        for i in aux.keys():
+            if not(i == 'Ativo' or i == '*'):
+                    aux_dict[0]+=aux[i]
+
+    elif data_type == 'cep':
+        for i in aux.keys():
+            if not(i == 'Ativo' or i == '*'):
+                    aux_dict[0]+=aux[i]
+    
+    elif data_type == 'porte':
+        portes=['MICRO EMPRESA', 'INDIVIDUAL', 'EMPRESA DE PEQUENO PORTE', 'DEMAIS', '*', 'GRANDE']
+        for i in aux.keys():
+            if i not in portes:
+                    aux_dict[0]+=aux[i]
+
+    elif data_type == 'cnae':
+        #re
+        aux=0
+
+    elif data_type == 'cnpj':
+        #re
+        aux=0
+
+    else:
+        print('\nERROR: Data type invalid!')
+        return
+
+    report('validity', aux_dict, len(col_list))
