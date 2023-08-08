@@ -1,4 +1,5 @@
 import pandas as pd 
+import re
 
 def dict_sum(table):
     count=0
@@ -76,12 +77,16 @@ def missing(col_list): #quantidade de registros nao vazios
     report('missing',aux_dict,len(col_list))
 
 def validity(col_list, data_type):
-    aux=col_list.value_counts()
+    aux=col_list.value_counts() #dict atributo:qnt_vezes_planilha
     aux_dict={}
-    aux_dict[0]=0
+    aux_dict[0]=0 #dicionario para mandar para func report(), poderia ser apenas uma variavel count por exemplo
     if data_type == 'link':
-        #re
-        aux=0
+        link = re.compile("https://www.[a-z0-9]+.[A-Za-z0-9/.]+")
+        for i in aux.keys():
+            if not link.search(i):
+                aux_dict[0]+=aux[i]
+            else:
+                print(i)
 
     elif data_type == 'endereço':
         #re
@@ -110,9 +115,8 @@ def validity(col_list, data_type):
                     aux_dict[0]+=aux[i]
 
     elif data_type == 'cep':
-        for i in aux.keys():
-            if not(i == 'Ativo' or i == '*'):
-                    aux_dict[0]+=aux[i]
+        #re
+        aux=0
     
     elif data_type == 'porte':
         portes=['MICRO EMPRESA', 'INDIVIDUAL', 'EMPRESA DE PEQUENO PORTE', 'DEMAIS', '*', 'GRANDE']

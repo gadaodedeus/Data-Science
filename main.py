@@ -3,4 +3,4 @@ from init import init_df
 import quality as q 
 
 bd=init_df('base.xlsx')
-q.validity(bd.porte, 'porte')
+q.validity(bd.link_ifood, 'link')
