@@ -53,7 +53,7 @@ def duplicated(col_list):
     for reg in aux.keys():
         if(aux[reg]==1):
             break
-        if(reg=='*'):
+        if(reg=='*' or reg==''):
             continue
         aux_dict[reg]=aux[reg]
     report('duplicated', aux_dict, len(col_list))
@@ -71,7 +71,7 @@ def missing(col_list): #quantidade de registros nao vazios
     mis=0
     aux_dict={}
     for reg in col_list:
-        if reg == '*':
+        if reg == '*' or reg == '':
 	        mis+=1
     aux_dict[0]=mis
     report('missing',aux_dict,len(col_list))
@@ -83,7 +83,7 @@ def validity(col_list, data_type):
     if data_type == 'link':
         link = re.compile("https://www.[a-z0-9]+.[A-Za-z0-9/.]+")
         for i in aux.keys():
-            if not link.search(i):
+            if not link.match(i):
                 aux_dict[0]+=aux[i]
             else:
                 print(i)
@@ -91,10 +91,16 @@ def validity(col_list, data_type):
     elif data_type == 'endereço':
         #re
         aux=0
-
+ 
     elif data_type == 'nome':
-        #re
-        aux=0
+        nome = re.compile("[a-z-'ãáõéêâíôó().ç 0-9&\n\t]+")
+        for i in aux.keys():
+            if not nome.match(i.lower()):
+                aux_dict[0]+=aux[i]
+                print(i.lower())
+                print(c)
+            else:
+                continue
     
     elif data_type == 'rating':
         for i in aux.keys():
@@ -102,7 +108,7 @@ def validity(col_list, data_type):
                 if float(i) < 0.0 or float(i) > 5.0:
                     aux_dict[0]+=aux[i]
             except: #Nan cases
-                if  not i == '*':
+                if  not (i == '*' or i == ''):
                     aux_dict[0]+=aux[i]
 
     elif data_type == 'fone':
