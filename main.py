@@ -1,6 +1,8 @@
 import pandas as pd
 from init import init_df
 import quality as q 
+import noiser as n
 
-bd=init_df('base.xlsx')
-q.validity(bd.nome, 'nome')
+df=pd.read_excel('base.xlsx')
+
+n.typo(df, 0.2, ['Segmento '], 1)
