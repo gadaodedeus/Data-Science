@@ -3,18 +3,33 @@ import matplotlib.pyplot as plt
 import re
 
 def pie_plot(labels, dict_col, title):
-    l=0
-    fig, axs = plt.subplots(len(dict_col.keys()))
-    fig.suptitle(title)
+    # axis reference
+    x = 0
+    y = 0
+    
+    if(len(dict_col.keys()) > 1):   # one plot required (item on dict)
+        fig, axs = plt.subplots(ncols=4,nrows=int(len(dict_col.keys())/4)+1)
+    else:   # more than one plot (item on dict)
+        fig, axs = plt.subplots()
 
+    fig.suptitle(title) # title
+    fig.set_size_inches(18.5, 10.5, forward=True)   # fig format
+   
     if(len(dict_col.keys()) > 1):   # more than one item on dict
         for i in dict_col.keys():
-            axs[l].pie([dict_col[i], 1-dict_col[i]], labels=labels, autopct='%1.1f%%')
-            axs[l].set_title(i)
-            l+=1
+            axs[y,x].pie([dict_col[i], 1-dict_col[i]], autopct='%1.1f%%')   # autopct = shows data on pie graph
+            axs[y,x].set_title(i)
+            axs[y,x].legend(loc='upper right', labels=labels)         
+            
+            # index update
+            if(x==3):
+                x=0
+                y+=1
+            x+=1
 
     else:   # one item on dict
-        axs.pie([dict_col['0'], 1-dict_col['0']], labels=labels, autopct='%1.1f%%')
+        axs.pie([dict_col['0'], 1-dict_col['0']], autopct='%1.1f%%')
+        axs.legend(loc='upper right', labels=labels)   
 
     plt.show()
 
