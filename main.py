@@ -2,22 +2,45 @@ import pandas as pd
 from remove_ext import remove
 import quality as q 
 import noiser as n
-from spellchecker import SpellChecker
+from hunspell import Hunspell
+
+df=pd.DataFrame([['12/2','3', 12, 3.2],['21/3/2012','3',32,3.33]], columns=['date','obj','int','flt'])
+#df=pd.read_csv('penguins_size.csv')
+#df=q.norm_nan(df)
+q.consistency(df)
+
+# remove '.txt' from books archive name
+# books = list(df['Work'])
+# for i in range(len(books)):
+#     books[i]=remove(books[i])
+#     books[i]=n.typo(books[i], lvl=1)
+#     print('\n-----------------------------------------------------------\n'+books[i])
+#     words=books[i].split(' ')
+#     for j in range(len(words)):
+#         print(h.spell(words[j].lower()))   
+
+
+
+# import nltk
+# nltk.download('stopwords','plunkt')
+# stopwords = nltk.corpus.stopwords.words("portuguese")
+# print(len(stopwords))
 
 # leitura do arquivo (csv)
-########################################################
-path='penguins_size.csv'
-df=pd.read_csv(path)
+# ########################################################
+# path='penguins_size.csv'
+# df=pd.read_csv(path)
 #print(df.describe())
 
 # verificação da qualidade dos dados
 # ########################################################
-q.dtype_columns(df)
-q.duplicated(df)
-q.missing(df,df.columns)
+# q.dtype_columns(df)
+# q.duplicated(df)
+# q.missing(df,df.columns)
 
-# BOOKS
+# BOOKS # spellchexker
 ##########################################################################
+#from spellchecker import SpellChecker
 # df=pd.read_csv('guideToDocuments.csv')
 # #print(df.head())
 # # remove '.txt' from books archive name
