@@ -7,6 +7,13 @@ import string
 import math
 import operator
 
+# re patterns (used in 1.1 and 3.3)
+#######################################################
+date=re.compile('((0?[1-9]|1[0-9]|2[0-9]|3[0-1])[/-]((0?)[1-9]|11|12)[/-]?([1-9][0-9]{1}|[1-9][0-9]{3})?)|(([1-9][0-9]{1}|[1-9][0-9]{3})[/-]((0?)[1-9]|11|12)[/-]?(0?[1-9]|1[0-9]|2[0-9]|3[0-1])?)|(((0?)[1-9]|11|12)[/-]((0)?[1-9]|1[0-9]|2[0-9]|3[0-1])[/-]?([1-9][0-9]{1}|[1-9][0-9]{3})?)')
+integer = re.compile("[0-9]+")
+flt = re.compile('[0-9]+[.;,]{1}[0-9]+')
+########################################################
+
 
 # PLOT
 ###############################################################################
@@ -106,10 +113,130 @@ def typo_detect(df, col):
 
 # ACCURACY FUNCS
 ###############################################################################
-    # 1.1 SYNTAX
-def acc_syntex(df, col):
-    for i in col:
-        pass
+def acc_syn(df, col):    # 1.1 SYNTAX
+    #series of prevision
+    detected=0
+    # count of possible types
+    types_incol={'int': 0 , 'float': 0, 'datetime': 0, 'object': 0}
+    #######################################################
+
+    # verification
+    #########################################################
+    # dataframe
+    ################### 
+    if('DataFrame' in str(type(df))):   
+        detected=pd.DataFrame([], columns=df.columns, index=['correct','total']) #wrong syntax detected #total not null
+        #print(detected)
+        # each column
+        for i in df.columns:
+            types_incol={'int': 0 , 'float': 0, 'datetime': 0, 'object': 0} # reset dict
+
+            # each row
+            for j in range(len(df)):
+                
+                # verify nan
+                if(pd.isna(df[i][j])):
+                    pass
+                
+                # match pattern
+                else:
+                    #print(str(df[i][j]))
+
+                    if(date.fullmatch(str(df[i][j]))):
+                        types_incol['datetime']+=1
+
+                    elif(flt.fullmatch(str(df[i][j]))):
+                        types_incol['float']+=1
+                    
+                    elif(integer.fullmatch(str(df[i][j]))):
+                        types_incol['int']+=1
+        
+                    else:
+                        types_incol['object']+=1
+            ref_type=rstr(col[i])
+            detected[i]['total']=sum(types_incol.values())
+            detected[i]['correct']=types_incol[ref_type]
+            #print(detected)
+        #print(col)
+        return detected
+    # series
+    ###################    
+    else: 
+        detected=pd.Series([], index=['correct','total']) #wrong syntax detected #total not null
+        #print(detected)
+        # each column
+        for j in df.index:
+            
+            # verify nan
+            if(pd.isna(df[j])):
+                pass
+            
+            # match pattern
+            else:
+                #print(str(df[j]))
+
+                if(date.fullmatch(str(df[j]))):
+                    types_incol['datetime']+=1
+
+                elif(flt.fullmatch(str(df[j]))):
+                    types_incol['float']+=1
+                
+                elif(integer.fullmatch(str(df[j]))):
+                    types_incol['int']+=1
+    
+                else:
+                    types_incol['object']+=1
+        ref_type=str(col)
+        detected['total']=sum(types_incol.values())
+        detected['correct']=types_incol[ref_type]
+        #print(detected)
+        #print(col)
+        return detected
+
+def acc_sem(df, col):    # 1.2 SEMANTICS
+    aux=df  # df auxiliar, para dropar nan
+    detected=0  # returned df/series
+
+    # dataframe
+    if('DataFrame' in str(type(df))): 
+        detected=pd.DataFrame([], columns=df.columns, index=['correct','total'])  
+        
+        for i in col.index:
+            detected[i]['total']=len(aux[i])
+            
+            # to_numeric()
+            if(col[i] in 'int' or col[i] in 'float'):
+                aux[i]=pd.to_numeric(aux[i],errors='coerce')   # coerce -> error generates nan
+                detected[i]['correct'] = len(aux[i].dropna())
+            
+            # to_datetime()
+            elif(col[i] in 'datetime'):
+                aux[i]=pd.to_datetime(aux[i],errors='coerce')   # coerce -> error generates nan
+                detected[i]['correct'] = len(aux[i].dropna())
+            
+            # objects not null
+            else:
+                detected[i]['correct'] = len(aux[i].dropna())
+
+        return detected
+
+    else:
+        detected=pd.DataFrame([], index=['correct','total'])  
+    
+        detected['total']=len(aux[i])
+        
+        if(col in 'int' or col in 'float'):
+            aux=pd.to_numeric(aux,errors='coerce')
+            detected['correct'] = len(aux.dropna())
+        
+        elif(col in 'datetime'):
+            aux=pd.to_datetime(aux,errors='coerce')
+            detected['correct'] = len(aux.dropna())
+        
+        else:
+            detected['correct'] = len(aux.dropna())
+
+        return detected
 ###############################################################################
 
 
@@ -140,7 +267,12 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
     #types in df via pandas
     real_type=df.dtypes
     # fraction of df
-    aux=df#.sample(frac=0.01)
+    if(len(df) < 10):
+        aux=df
+    elif(len(df) < 100):
+        aux=df.sample(frac=0.1)
+    else:
+        aux=df.sample(frac=0.01)
     #series of prevision
     detected={}
     # df.columns (will be used to try except)
@@ -151,18 +283,13 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
     inc_cols=[]
     #######################################################
 
-    # re patterns
-    #######################################################
-    integer = re.compile("[0-9]+")
-    flt = re.compile('[0-9]+[.;,]{1}[0-9]+')
-    date=re.compile('((0?[1-9]|1[0-9]|2[0-9]|3[0-1])[/-]((0?)[1-9]|11|12)[/-]?([1-9][0-9]{1}|[1-9][0-9]{3})?)|(([1-9][0-9]{1}|[1-9][0-9]{3})[/-]((0?)[1-9]|11|12)[/-]?(0?[1-9]|1[0-9]|2[0-9]|3[0-1])?)|(((0?)[1-9]|11|12)[/-]((0)?[1-9]|1[0-9]|2[0-9]|3[0-1])[/-]?([1-9][0-9]{1}|[1-9][0-9]{3})?)')
-    ########################################################
+    
 
     # verification
     #########################################################
     # dataframe
     ################### 
-    try:    
+    if('DataFrame' in str(type(aux))):    
         col=df.columns
 
         # each column
@@ -170,8 +297,7 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
             types_incol={'int': 0 , 'float': 0, 'datetime': 0, 'object': 0} # reset dict
 
             # each row
-            for j in range(len(aux)):
-                
+            for j in aux.index:
                 # verify nan
                 if(pd.isna(aux[i][j])):
                     pass
@@ -201,15 +327,20 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
                 if(real == 2):
                     inc_cols.append(i)
                     wrong_cols+=1
+                else:
+                    real_type[i]=detected[i]
+            real_type[i]=re.sub(r'[0-9]', '',str(real_type[i]))
         if(wrong_cols > 0):
             print('As colunas '+str(inc_cols)+' sao inconsistentes!')
+        
+        return wrong_cols, real_type
 
     # series
     ###################    
-    except: 
+    else: 
 
         # each row
-        for j in range(len(aux)):
+        for j in aux.index:
 
             # verify nan
             if(pd.isna(aux[j])):
@@ -241,6 +372,6 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
         if(wrong_cols > 0):
             print('O tipo da Serie é inconsistente!')
 
-    return wrong_cols
+        return wrong_cols, type_serie
     ###################################################
 ###############################################################################

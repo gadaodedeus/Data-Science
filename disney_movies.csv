@@ -2,26 +2,26 @@ movie_title,release_date,genre,mpaa_rating,total_gross,inflation_adjusted_gross
 Snow White and the Seven Dwarfs,1937-12-21,Musical,G,184925485,5228953251
 Pinocchio,1940-02-09,Adventure,G,84300000,2188229052
 Fantasia,1940-11-13,Musical,G,83320000,2187090808
-Song of the South,1946-11-12,Adventure,G,65000000,1078510579
+Song of the South,,Adventure,G,65000000,1078510579
 Cinderella,1950-02-15,Drama,G,85000000,920608730
 Lady and the Tramp,1955-06-22,Drama,G,93600000,1236035515
 101 Dalmatians,1961-01-25,Comedy,G,153000000,1362870985
-Babes in Toyland,1961-12-14,Musical,G,10218316,124841160
-Bon Voyage!,1962-05-17,Comedy,Not Rated,9230769,109581646
-The Jungle Book,1967-10-18,Musical,Not Rated,141843000,789612346
-The Aristocats,1970-04-24,Musical,G,55675257,255161499
-Splash,1984-03-09,Comedy,PG,62599495,157057661
-Down and Out in Beverly Hills,1986-01-31,Comedy,R,62134225,141183693
-Ruthless People,1986-06-27,Comedy,R,71624879,162748712
-The Color of Money,1986-10-17,Drama,R,52293000,117957323
-Outrageous Fortune,1987-01-30,Comedy,R,52864741,113976921
-Stakeout,1987-08-05,Comedy,R,65673233,141592160
-3 Men and a Baby,1987-11-25,Comedy,PG,167780960,353334607
-Good Morning Vietnam,1987-12-23,Comedy,R,123922370,254414837
-Return to Snowy River,1988-04-15,Adventure,PG,13687027,28073384
-Big Business,1988-06-10,Comedy,PG,40150487,82352451
-Who Framed Roger Rabbit?,1988-06-22,Comedy,PG,154112492,316250084
-Cocktail,1988-07-29,Drama,R,78222753,160442289
+Babes in Toyland,,Musical,G,10218316,124841160
+Bon Voyage!,1962-05-17,Comedy,,9230769,109581646
+The Jungle Book,1967-10-18,Musical,,141843000,
+The Aristocats,,Musical,G,,255161499
+Splash,,Comedy,PG,62599495,157057661
+Down and Out in Beverly Hills,,Comedy,R,62134225,141183693
+Ruthless People,,Comedy,R,71624879,162748712
+The Color of Money,,Drama,R,52293000,117957323
+Outrageous Fortune,,Comedy,R,,113976921
+Stakeout,,Comedy,R,65673233,141592160
+3 Men and a Baby,,Comedy,PG,167780960,
+,1987-12-23,Comedy,R,123922370,254414837
+,1988-04-15,Adventure,,13687027,28073384
+,1988-06-10,Comedy,PG,40150487,82352451
+,1988-06-22,Comedy,PG,154112492,316250084
+,1988-07-29,Drama,R,78222753,160442289
 Ernest Saves Christmas,1988-11-11,Comedy,PG,28202109,57845202
 Oliver & Company,1988-11-18,Adventure,G,49576671,102254492
 Beaches,1988-12-21,Drama,PG-13,57041866,120381757
