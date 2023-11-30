@@ -239,6 +239,35 @@ def acc_sem(df, col):    # 1.2 SEMANTICS
         return detected
 ###############################################################################
 
+# COMPLETNESS
+###############################################################################
+def comp_row(df): # 2.2 ROW
+    lvl_inc = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+    len_row = len(df.columns)
+    for i in df.index:
+        pct = df.loc[i].isna().sum() / len_row
+        
+        if(0 <= pct < 0.25):
+            lvl_inc[4]+=1
+        elif(0.25 <= pct <  0.5):
+            lvl_inc[3]+=1
+        elif(0.5 <= pct <  0.75):
+            lvl_inc[2]+=1
+        elif(0.75 <= pct <  0.99):
+            lvl_inc[1]+=1
+        elif(pct == 1.0):
+            lvl_inc[0]+=1
+
+    return lvl_inc
+
+def fake_comp(df):
+    char=str(input('Informe o caracter especial utilizado: '))
+    detected=pd.DataFrame([], columns=df.columns, index=['wrong','total'])
+    for i in detected.columns:
+        detected[i]['wrong']=len(df[i].loc[df[i] == char])
+        detected[i]['total']=len(df[i])
+    return  detected, char
+###############################################################################
 
 # CONSISTENCY FUNCS
 ###############################################################################
@@ -254,6 +283,10 @@ def consistency(df):    # get all the subcaracteristcs in one func
 
     bar_plot(data, 'CONSISTENCY')
 #
+def cons_key(df, col):  # 3.1 PRIMARY KEY
+    miss=df[col].isna().sum()
+    dupli=df[col].duplicated().sum()
+    return miss, dupli
 
 def cons_type(df):  # 3.3 FORMAT   # data type on each row
     # var def

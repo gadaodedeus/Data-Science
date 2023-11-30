@@ -5,11 +5,10 @@ import noiser as n
 from hunspell import Hunspell
 
 #df=pd.DataFrame([['12/2','3', 12, 3.2],['21/3/2012','3',32,3.33]], columns=['date','obj','int','flt'])
-df=pd.read_csv('disney_movies.csv')
-print(df.head())
+df=pd.read_excel('base1.xlsx')
+print(df.columns)
+print(q.fake_comp(df))
 #df=q.norm_nan(df)
-wrong, cols = q.cons_type(df)
-print(q.acc_sem(df,cols))
 
 # remove '.txt' from books archive name
 # books = list(df['Work'])
