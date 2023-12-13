@@ -69,46 +69,6 @@ def bar_plot(data, title):
     plt.show() 
 ###############################################################################
 
-# PANDAS AND HUNSPELL FUNCS
-###############################################################################
-def duplicated(df): # rows duplicated
-    percent_dupli = df.duplicated().sum()/len(df)
-    labels=['Duplicados','Únicos']
-    pie_plot(labels, {'0': percent_dupli}, 'Registros Duplicados')
-
-def missing(df, col): # missing values on columns
-    dict_col={}
-    for i in col:
-        percent_mis = df[i].isna().sum()/len(df)
-        dict_col[i]=percent_mis
-    labels = ['Faltando', 'Completo']
-    pie_plot(labels, dict_col, 'Registros Faltantes')
-
-def typo_detect(df, col):
-    dict_col={}
-    
-    h = Hunspell('Portuguese (Brazilian)', hunspell_data_dir='dict')
-    for i in col:
-        typo_count=0    # qtn rows detected with typo
-        for j in range(len(df[i])):
-            words=df[i][j]  # get words from df
-            words=re.sub(r'\W+', ' ', words)    # remove non-alphanumeric stuff -> whitespace
-            words=words.split(' ')  # split to list
-            print(words)
-
-            for k in range(len(words)): # check each word of sentence
-                if(not h.spell(words[k].lower())):  # misspelled
-                    typo_count+=1
-                    break
-
-        if(len(col) == 1):  # single plot
-            dict_col['0']=typo_count/len(df[i])
-        else:               # multiples plots
-            dict_col[i]=typo_count/len(df[i])
-
-    labels = ['Errado', 'Correto']
-    pie_plot(labels, dict_col, 'Typo Errors')
-###############################################################################
 
 
 # ACCURACY FUNCS
@@ -153,7 +113,7 @@ def acc_syn(df, col):    # 1.1 SYNTAX
         
                     else:
                         types_incol['object']+=1
-            ref_type=rstr(col[i])
+            ref_type=str(col[i])
             detected[i]['total']=sum(types_incol.values())
             detected[i]['correct']=types_incol[ref_type]
             #print(detected)
@@ -194,7 +154,7 @@ def acc_syn(df, col):    # 1.1 SYNTAX
         return detected
 
 def acc_sem(df, col):    # 1.2 SEMANTICS
-    aux=df  # df auxiliar, para dropar nan
+    aux=pd.DataFrame(df) # df auxiliar, para dropar nan
     detected=0  # returned df/series
 
     # dataframe
@@ -241,10 +201,11 @@ def acc_sem(df, col):    # 1.2 SEMANTICS
 
 # COMPLETNESS
 ###############################################################################
-def comp_row(df): # 2.2 ROW
+def comp_row(df):   # 2.1 ROW
     lvl_inc = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     len_row = len(df.columns)
     for i in df.index:
+        #print(df.loc[i])
         pct = df.loc[i].isna().sum() / len_row
         
         if(0 <= pct < 0.25):
@@ -260,33 +221,49 @@ def comp_row(df): # 2.2 ROW
 
     return lvl_inc
 
-def fake_comp(df):
+def com_col(df):    # 2.2 COLUMN MISSING
+    col=pd.DataFrame(index=['missing'],columns=df.columns)
+    for i in col:
+        mis = df[i].isna().sum()
+        col[i]['missing']=mis
+    return col
+    
+def fake_comp(df):  # 2.3 FAKE COMPL
     char=str(input('Informe o caracter especial utilizado: '))
     detected=pd.DataFrame([], columns=df.columns, index=['wrong','total'])
     for i in detected.columns:
-        detected[i]['wrong']=len(df[i].loc[df[i] == char])
+        detected[i]['wrong']=df[i].loc[df[i] == char].sum()
         detected[i]['total']=len(df[i])
-    return  detected, char
+    return  detected#, char
 ###############################################################################
 
 # CONSISTENCY FUNCS
 ###############################################################################
-# CONSISTENCY MAIN FUNC
-def consistency(df):    # get all the subcaracteristcs in one func
-    data={'format':[]}
-    # 3.3 format
-    data['format'].append(len(df.columns))
-    data['format'].append(cons_type(df))
-    # print('Total columns: '+str(len(df.columns)))
-    # print('Wrong type columns: '+str(wrong_cols))
-
-
-    bar_plot(data, 'CONSISTENCY')
-#
 def cons_key(df, col):  # 3.1 PRIMARY KEY
     miss=df[col].isna().sum()
     dupli=df[col].duplicated().sum()
     return miss, dupli
+
+def cons_typo(df, col): # 3.2 TYPO
+    dict_col=pd.DataFrame(index=['num'],columns=col)
+    aux=df.dropna()
+    h = Hunspell('Portuguese (Brazilian)', hunspell_data_dir='dict')
+    for i in col:
+        typo_count=0    # qtn rows detected with typo
+        for j in aux.index:
+            words=aux[i][j]  # get words from df
+            words=re.sub(r'\W+', ' ', words)    # remove non-alphanumeric stuff -> whitespace
+            words=words.split(' ')  # split to list
+
+            for k in range(len(words)): # check each word of sentence
+                if(not h.spell(words[k].lower())):  # misspelled
+                    typo_count+=1
+                    print(words[k])
+                    break
+
+        dict_col[i]['num']=typo_count
+
+    return dict_col
 
 def cons_type(df):  # 3.3 FORMAT   # data type on each row
     # var def
@@ -357,14 +334,13 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
                 print('\t1- '+detected[i])
                 print('\t2- '+str(real_type[i]))
                 real=int(input())
-                if(real == 2):
+                if(real == 1):
                     inc_cols.append(i)
                     wrong_cols+=1
-                else:
-                    real_type[i]=detected[i]
+                    real_type[i]=detected[i]  
             real_type[i]=re.sub(r'[0-9]', '',str(real_type[i]))
-        if(wrong_cols > 0):
-            print('As colunas '+str(inc_cols)+' sao inconsistentes!')
+        # if(wrong_cols > 0):
+        #     print('As colunas '+str(inc_cols)+' sao inconsistentes!')
         
         return wrong_cols, real_type
 
@@ -402,9 +378,13 @@ def cons_type(df):  # 3.3 FORMAT   # data type on each row
                 real=int(input())
                 if(real == 1):
                     wrong_cols+=1
-        if(wrong_cols > 0):
-            print('O tipo da Serie é inconsistente!')
-
+        
         return wrong_cols, type_serie
     ###################################################
+###############################################################################]
+
+# DUPLICATE
+###############################################################################
+def duplicated(df): # rows duplicated
+    return df.duplicated().sum()
 ###############################################################################

@@ -1,77 +1,142 @@
 import pandas as pd
-from remove_ext import remove
+import string
 import quality as q 
 import noiser as n
 from hunspell import Hunspell
+from auxlib import printl, select_col
+import re
 
-#df=pd.DataFrame([['12/2','3', 12, 3.2],['21/3/2012','3',32,3.33]], columns=['date','obj','int','flt'])
-df=pd.read_excel('base1.xlsx')
-print(df.columns)
-print(q.fake_comp(df))
-#df=q.norm_nan(df)
+print('''
+    \t\t----------------------------------
+    \t\t-------------WELCOME!-------------
+    \t\t----------------------------------
+    ''')
 
-# remove '.txt' from books archive name
-# books = list(df['Work'])
-# for i in range(len(books)):
-#     books[i]=remove(books[i])
-#     books[i]=n.typo(books[i], lvl=1)
-#     print('\n-----------------------------------------------------------\n'+books[i])
-#     words=books[i].split(' ')
-#     for j in range(len(words)):
-#         print(h.spell(words[j].lower()))   
+# File reading
+####################################################################
+file_path = str(input('Insert file path/name: '))
+aux = file_path.split('.')
+df=pd.DataFrame()
+
+if(str(aux[len(aux)-1]) == 'xlsx'):
+    try:
+        df=pd.read_excel(file_path)
+        print('Excel file reading completed successfully!\n')
+    except:
+        print('ERROR: file does not exist!')
+elif(str(aux[len(aux)-1]) == 'csv'):
+    try:
+        df=pd.read_csv(file_path)
+        print('CSV file reading completed successfully!\n')
+    except:
+        print('ERROR: file does not exist!')
+else:
+    print('ERROR: Extension not supported: '+str(aux[len(aux)-1]))
+####################################################################
+
+#  OBS: PARAR ALGORITMO CASO DE ERRO NA LEITURA DOA RQUIVVO
+
+# Primary key consistency
+####################################################################
+printl(df.columns)
+key_col = str(input('Select primary key column: '))
+while(key_col not in df.columns):
+    printl(df.columns)
+    key_col = str(input('Select valid option: '))
+prim_miss, prim_dupli = q.cons_key(df,key_col)
+####################################################################
+
+# Format and datatype
+####################################################################
+wrong_type, type_list = q.cons_type(df)
+syntax = q.acc_syn(df, type_list)
+semantic = q.acc_sem(df, type_list)
+####################################################################
+
+print('\n')
+
+# Completeness
+####################################################################
+completeness_row = q.comp_row(df)
+completeness_col=q.com_col(df)
+completeness_fake=0
+fake=input(str('Has this base fake completeness problems?[Y/N]'))
+if(fake.upper() in 'Y'):
+    completeness_fake=q.fake_comp(df)
+####################################################################
+
+print('\n')
+
+# TYPO
+####################################################################
+print('Select the text columns (only words, not links, note date, ...)')
+typo_col = select_col(df)
+typo_df = q.cons_typo(df, typo_col)
+####################################################################
+
+# DUPLICATE
+####################################################################
+dupli = q.duplicated(df)
+####################################################################
 
 
 
-# import nltk
-# nltk.download('stopwords','plunkt')
-# stopwords = nltk.corpus.stopwords.words("portuguese")
-# print(len(stopwords))
+# Final Report
+####################################################################
+report=pd.DataFrame(index = ['syntax', 'semantic'], columns = df.columns)
+row_qua=['VERY POOR', 'POOR\t', 'NEED SUPPORT', 'OK\t', 'PERFECT!']
 
-# leitura do arquivo (csv)
-# ########################################################
-# path='penguins_size.csv'
-# df=pd.read_csv(path)
-#print(df.describe())
+print('-------------------------------------------------------------')
 
-# verificação da qualidade dos dados
-# ########################################################
-# q.dtype_columns(df)
-# q.duplicated(df)
-# q.missing(df,df.columns)
+print('Total rows: '+str(len(df)))
 
-# BOOKS # spellchexker
-##########################################################################
-#from spellchecker import SpellChecker
-# df=pd.read_csv('guideToDocuments.csv')
-# #print(df.head())
-# # remove '.txt' from books archive name
-# spell=SpellChecker(language='pt')
-# books = list(df['Work'])
-# for i in range(len(books)):
-#     books[i]=remove(books[i])
-#     books[i]=n.typo(books[i], lvl=1)
-#     print('\n-----------------------------------------------------------\n'+books[i])
-#     print(spell.correction(books[i]))
-##########################################################################
+# primary key
+print('\n\tPRIMARY KEY')
+print('Missing: '+str(prim_miss))
+print('Duplicated: '+str(prim_dupli))
 
+print('\n')
 
-# remoção de registros com dados faltando
-########################################################
-# print(len(df))
-# df=df.dropna(axis='rows')
-# print(len(df))
+# format
+print('\n\tFORMAT')
+if(wrong_type == 0):
+    print('No wrong columns type!')
+else:
+    print(str(wrong_type)+' wrong columns in the dataframe!\n')
+    print('COLUMN\t\t\tDETECTED\t\tINCONSISTENT')
+    for i in df.columns:
+        if(str(type_list[i]) not in str(df.dtypes[i])):
+            print(str(i)+'\t\t'+str(type_list[i])+'\t\t'+str(df.dtypes[i]))
 
-# adição de ruido
-########################################################
-# frac=0.05
-# q.dtype_columns(df)
+print('\n')
 
-# df=n.insert_nan(df, frac, df.columns)
-# df=n.typo(df, frac, ['movie_title', 'genre', 'mpaa_rating'])
-# df=n.to_str(df, frac ,['total_gross'])
-# df=n.duplicate_rows(df, frac)
+for i in syntax.columns:
+    report[i]['syntax'] = syntax[i]['total'] - syntax[i]['correct']
+    report[i]['semantic'] = semantic[i]['total'] - semantic[i]['correct']
 
+print('\n\t\tACCURACY REPORT (number of invalid rows)\n')
+print(report)
 
-# salvar no arquivo (csv)
-########################################################
-#df.to_csv('disney_movies_1pct.csv')
+print('\n')
+
+# completeness
+print('\n\tCOMPLETENESS REPORT\n')
+print('\n\t   ROW INCOMPLETENESS\n')
+for i in range(5):
+    print('\t'+str(row_qua[i])+'\t'+str(completeness_row[i]))
+print('\n\t   COLUMN INCOMPLETENESS\n')
+print(completeness_col)
+
+if(fake.upper() in 'Y'):
+    print('\n\t   COLUMN FAKE COMPLETENESS\n')
+    print(completeness_fake.loc['wrong'])
+
+# typo
+print('\n\tTYPO MISTAKE\n')
+print(typo_df)
+
+# dupli
+print('\n\tDUPLICATED ROWS:  '+str(dupli))
+
+print('-------------------------------------------------------------')
+####################################################################
